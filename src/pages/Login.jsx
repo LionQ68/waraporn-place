@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { Building2, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const { user, signIn, signUp, configured } = useAuth();
   const location = useLocation();
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState(location.state?.signup ? "signup" : "login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,6 +67,7 @@ export default function Login() {
             {mode === "signup" && <label className="block"><span className="mb-2 block text-sm font-semibold">ชื่อผู้ใช้</span><input required value={fullName} onChange={(event) => setFullName(event.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500" /></label>}
             <label className="block"><span className="mb-2 block text-sm font-semibold">อีเมล</span><div className="flex items-center rounded-xl border border-slate-200 px-4 focus-within:border-blue-500"><Mail size={18} className="text-slate-400" /><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full px-3 py-3 outline-none" /></div></label>
             <label className="block"><span className="mb-2 block text-sm font-semibold">รหัสผ่าน</span><div className="flex items-center rounded-xl border border-slate-200 px-4 focus-within:border-blue-500"><LockKeyhole size={18} className="text-slate-400" /><input required minLength={8} type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} className="w-full px-3 py-3 outline-none" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="text-slate-400">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></label>
+            {mode === "login" && <Link to="/forgot-password" className="block text-right text-sm font-semibold text-blue-600">ลืมรหัสผ่าน?</Link>}
           </div>
           {error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
           {message && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{message}</p>}

@@ -1,0 +1,6 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LockKeyhole } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { AuthShell } from "@/pages/ForgotPassword";
+export default function ResetPassword(){const nav=useNavigate();const[password,setPassword]=useState("");const[error,setError]=useState("");async function submit(e){e.preventDefault();const{error:err}=await supabase.auth.updateUser({password});if(err)setError(err.message);else nav("/");}return <AuthShell><h1 className="text-3xl font-black">ตั้งรหัสผ่านใหม่</h1><p className="mt-2 text-sm text-slate-500">รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร</p><form onSubmit={submit} className="mt-7"><label className="flex items-center rounded-xl border border-slate-200 px-4"><LockKeyhole size={18} className="text-slate-400"/><input required minLength={8} type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full px-3 py-3 outline-none" placeholder="รหัสผ่านใหม่"/></label>{error&&<p className="mt-3 text-sm text-red-600">{error}</p>}<button className="mt-5 w-full rounded-xl bg-ink py-3 font-bold text-white">บันทึกรหัสผ่านใหม่</button></form></AuthShell>}
