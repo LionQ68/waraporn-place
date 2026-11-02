@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Banknote, BedDouble, Building2, CalendarDays, DoorOpen, Phone, ReceiptText, UserRound, Users, Wrench } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
@@ -26,7 +26,6 @@ export default function RoomDetail() {
   const [searchParams] = useSearchParams();
   const roomId = routeRoomId || searchParams.get("id");
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
 
   const { data: room, isLoading, isError } = useQuery({ queryKey: ["room", roomId], queryFn: () => base44.entities.Room.get(roomId), enabled: Boolean(roomId) });
@@ -35,11 +34,6 @@ export default function RoomDetail() {
   const { data: bookings = [] } = useQuery({ queryKey: ["room-bookings", roomId], queryFn: () => base44.entities.Booking.filter({ room_id: roomId }, "-created_date"), enabled: Boolean(roomId) });
   const activeTenants = useMemo(() => tenants.filter(t => t.is_active), [tenants]);
   const unpaidTotal = useMemo(() => invoices.filter(i => i.status !== "paid").reduce((sum, item) => sum + Number(item.total_amount || 0), 0), [invoices]);
-
-  const updateStatus = useMutation({
-    mutationFn: (status) => base44.entities.Room.update(roomId, { status }),
-    onSuccess: (updated) => { queryClient.setQueryData(["room", roomId], updated); queryClient.invalidateQueries({ queryKey: ["rooms"] }); },
-  });
 
   if (isLoading) return <div className="grid min-h-screen place-items-center bg-canvas text-slate-400">กำลังโหลดข้อมูลห้อง...</div>;
   if (!roomId || isError || !room) return <div className="grid min-h-screen place-items-center bg-canvas"><div className="text-center"><h1 className="text-2xl font-bold">ไม่พบข้อมูลห้อง</h1><Link to="/" className="mt-4 inline-block text-blue-600">กลับหน้าหลัก</Link></div></div>;
@@ -69,7 +63,6 @@ export default function RoomDetail() {
               <div><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm font-semibold text-blue-600">รายละเอียดห้องพัก</p><h2 className="mt-1 text-3xl font-black">ห้อง {room.room_number}</h2><p className="mt-2 text-slate-500">{room.room_type || "ห้องมาตรฐาน"}</p></div><StatusIcon className="text-slate-300" size={44} /></div>
                 <div className="mt-8 grid gap-3 sm:grid-cols-3"><Info icon={Building2} label="ชั้น" value={`ชั้น ${room.floor || "-"}`} /><Info icon={BedDouble} label="รองรับ" value={`${room.max_occupants || 2} คน`} /><Info icon={Banknote} label="ค่าเช่า" value={`${formatCurrency(room.rent_price)} / เดือน`} /></div>
               </div>
-              <div className="mt-8 border-t border-slate-100 pt-5"><label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">เปลี่ยนสถานะห้อง</label><select value={room.status} disabled={updateStatus.isPending} onChange={e => updateStatus.mutate(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-blue-400 sm:max-w-xs">{Object.entries(statusOptions).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}</select></div>
             </div>
           </div>
         </section>
